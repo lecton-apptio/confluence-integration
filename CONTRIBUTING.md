@@ -156,6 +156,72 @@ fix: handle 404 errors in delete verification
 docs: update installation instructions
 ```
 
+## Versioning and Releases
+
+This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
+
+- **MAJOR** version (X.0.0): Incompatible API changes
+- **MINOR** version (0.X.0): New functionality in a backward compatible manner
+- **PATCH** version (0.0.X): Backward compatible bug fixes
+
+### Version Bumping Guidelines
+
+When making changes, determine the appropriate version bump:
+
+1. **Breaking Changes** → MAJOR version
+   - Removing or renaming public APIs
+   - Changing function signatures
+   - Removing CLI parameters
+   - Changing default behavior in incompatible ways
+
+2. **New Features** → MINOR version
+   - Adding new classes, methods, or functions
+   - Adding new CLI commands or parameters
+   - Adding new optional parameters (with defaults)
+   - Enhancing existing functionality without breaking changes
+
+3. **Bug Fixes** → PATCH version
+   - Fixing bugs without changing APIs
+   - Documentation updates
+   - Performance improvements
+   - Internal refactoring
+
+### Updating Version Numbers
+
+When bumping versions, update in **three places**:
+
+1. `pyproject.toml` - line 7: `version = "X.Y.Z"`
+2. `confluence_integration/__init__.py` - line 42: `__version__ = "X.Y.Z"`
+3. `CHANGELOG.md` - Add new version section at the top
+
+### Changelog Maintenance
+
+All notable changes must be documented in `CHANGELOG.md` following [Keep a Changelog](https://keepachangelog.com/) format:
+
+```markdown
+## [X.Y.Z] - YYYY-MM-DD
+
+### Added
+- New features
+
+### Changed
+- Changes in existing functionality
+
+### Deprecated
+- Soon-to-be removed features
+
+### Removed
+- Removed features
+
+### Fixed
+- Bug fixes
+
+### Security
+- Security fixes
+```
+
+**Important**: Update the changelog in the same PR as your changes, not in a separate commit.
+
 ## Code Review Process
 
 All submissions require review. We use GitHub pull requests for this purpose. Reviewers will check:
@@ -165,6 +231,8 @@ All submissions require review. We use GitHub pull requests for this purpose. Re
 - Documentation updates
 - Backward compatibility
 - Performance implications
+- Version number updates (if applicable)
+- Changelog updates (if applicable)
 
 ## Reporting Issues
 

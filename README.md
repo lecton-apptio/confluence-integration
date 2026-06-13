@@ -713,16 +713,29 @@ MIT License - see LICENSE file for details
 For issues, questions, or contributions, please visit:
 https://github.com/yourusername/confluence-integration/issues
 
+## Versioning
+
+This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
+
+- **MAJOR** version for incompatible API changes
+- **MINOR** version for new functionality in a backward compatible manner
+- **PATCH** version for backward compatible bug fixes
+
+Current version: **1.1.0**
+
 ## Changelog
 
-### Version 1.0.0 (2026-06-12)
+See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes.
 
-- Initial release
-- 6 comprehensive permission tests
-- CLI and library interfaces
-- Environment variable and argument support
-- Detailed test results and error messages
-- Auto-cleanup of test pages
+### Latest Release: Version 1.1.0 (2026-06-13)
+
+- Added ConfluenceReader class for reading and filtering pages
+- Date range filtering (default: last 30 days)
+- Author filtering
+- File export (Markdown and JSON formats)
+- Enhanced CLI with `read` subcommand
+
+For complete release history, see [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
