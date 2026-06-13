@@ -8,15 +8,22 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-A production-grade Python library for validating Confluence API permissions through comprehensive testing. This package performs 6 distinct tests to verify Create, Read, Update, and Delete (CRUD) permissions on your Confluence space.
+A production-grade Python library for validating Confluence API permissions and reading pages with advanced filtering. This package performs 6 distinct tests to verify Create, Read, Update, and Delete (CRUD) permissions, and provides powerful page reading capabilities with date range and author filtering.
 
 ## Features
 
+### Permission Validation
 - ✅ **6 Comprehensive Tests**: CREATE, READ, UPDATE, READ_VERIFY, DELETE, DELETE_VERIFY
 - 🔐 **Secure Authentication**: Uses Atlassian API tokens
-- 📦 **Easy Integration**: Use as a library or CLI tool
 - 🎯 **Detailed Results**: Get specific feedback on each permission test
 - 🧹 **Auto Cleanup**: Automatically removes test pages after validation
+
+### Page Reading & Filtering
+- 📖 **Read Pages**: Fetch pages from Confluence spaces
+- 📅 **Date Range Filtering**: Filter by creation/modification date (default: last 30 days)
+- 👤 **Author Filtering**: Filter pages by specific authors
+- 📦 **Easy Integration**: Use as a library or CLI tool
+- 🎯 **Flexible Output**: Include or exclude page content
 
 ## Installation
 
@@ -70,26 +77,67 @@ CONFLUENCE_API_TOKEN=your_api_token_here
 CONFLUENCE_SPACE_KEY=YOUR_SPACE
 ```
 
-### 3. Run the Tests
+### 3. Run the Tools
 
-#### As a CLI Tool
+#### Validate Permissions (CLI)
 
 ```bash
 # Using .env file
-python -m confluence_integration
+python -m confluence_integration validate
 
 # Using command line arguments
-python -m confluence_integration \
+python -m confluence_integration validate \
   --url https://your-domain.atlassian.net \
   --email your.email@company.com \
   --token your_api_token \
   --space YOUR_SPACE
 
 # With verbose output
-python -m confluence_integration --verbose
+python -m confluence_integration validate --verbose
+```
+
+#### Read Pages (CLI)
+
+```bash
+# Read pages from last 30 days (default)
+python -m confluence_integration read
+
+# Read pages with custom date range
+python -m confluence_integration read \
+  --start-date 2026-05-01 \
+  --end-date 2026-06-01
+
+# Read pages by specific authors
+python -m confluence_integration read \
+  --authors john.doe@company.com,jane.smith@company.com
+
+# Read pages with content included
+python -m confluence_integration read --include-content
+
+# Save pages as Markdown files
+python -m confluence_integration read \
+  --start-date 2026-06-01 \
+  --output-dir ./confluence-pages \
+  --format markdown
+
+# Save pages as JSON files
+python -m confluence_integration read \
+  --start-date 2026-06-01 \
+  --output-dir ./confluence-pages \
+  --format json
+
+# Combine filters and save
+python -m confluence_integration read \
+  --start-date 2026-05-01 \
+  --end-date 2026-06-01 \
+  --authors john.doe@company.com \
+  --output-dir ./my-pages \
+  --format markdown
 ```
 
 #### As a Python Library
+
+**Validate Permissions:**
 
 ```python
 from confluence_integration import ConfluencePermissions
@@ -113,6 +161,37 @@ if results["all_passed"]:
 else:
     print("❌ Some tests failed")
     print(f"Passed: {results['summary']['passed']}/{results['summary']['total']}")
+```
+
+**Read and Filter Pages:**
+
+```python
+from confluence_integration import ConfluenceReader
+
+# Initialize reader with filters
+reader = ConfluenceReader(
+    url="https://your-domain.atlassian.net",
+    email="your.email@company.com",
+    api_token="your_api_token",
+    space_key="YOUR_SPACE",
+    start_date="2026-05-01",  # Optional: defaults to 30 days ago
+    end_date="2026-06-01",    # Optional: defaults to today
+    authors=["john.doe@company.com", "jane.smith@company.com"]  # Optional: defaults to all
+)
+
+# Get pages matching filters
+pages = reader.get_pages(include_content=True)
+
+# Process pages
+for page in pages:
+    print(f"Title: {page.title}")
+    print(f"Author: {page.author_display_name}")
+    print(f"Created: {page.created_date}")
+    print(f"Modified: {page.modified_date}")
+    print(f"URL: {page.url}")
+    if page.content:
+        print(f"Content: {page.content[:100]}...")
+    print()
 ```
 
 ## The 6 Permission Tests
@@ -163,8 +242,10 @@ Attempts to read the deleted page (should fail with 404).
 
 ### Command Line Arguments
 
+#### Validate Command
+
 ```bash
-python -m confluence_integration --help
+python -m confluence_integration validate --help
 ```
 
 Options:
@@ -174,6 +255,26 @@ Options:
 - `--space SPACE` - Confluence space key
 - `--env PATH` - Path to custom .env file
 - `--verbose, -v` - Show detailed test information
+
+#### Read Command
+
+```bash
+python -m confluence_integration read --help
+```
+
+Options:
+- `--url URL` - Confluence base URL
+- `--email EMAIL` - Atlassian account email
+- `--token TOKEN` - API token
+- `--space SPACE` - Confluence space key
+- `--env PATH` - Path to custom .env file
+- `--start-date DATE` - Start date in YYYY-MM-DD format (default: 30 days ago)
+- `--end-date DATE` - End date in YYYY-MM-DD format (default: today)
+- `--authors AUTHORS` - Comma-separated list of author usernames/emails (default: all)
+- `--include-content` - Include page content in output
+- `--limit N` - Maximum pages per request (default: 100)
+- `--output-dir DIR` - Directory to save pages as files (optional)
+- `--format FORMAT` - Output format when saving: "json" or "markdown" (default: markdown)
 
 ## Usage Examples
 
@@ -269,6 +370,61 @@ def validate_confluence_access():
 
 if __name__ == "__main__":
     validate_confluence_access()
+```
+
+### Example 5: Read Pages with Filtering
+
+```python
+from confluence_integration import ConfluenceReader
+from datetime import datetime, timedelta
+
+# Read pages from last 7 days
+end_date = datetime.now()
+start_date = end_date - timedelta(days=7)
+
+reader = ConfluenceReader(
+    url="https://apptio.atlassian.net",
+    email="john.doe@apptio.com",
+    api_token="ATATT3xFfGF0...",
+    space_key="ENGINEERING",
+    start_date=start_date.strftime("%Y-%m-%d"),
+    end_date=end_date.strftime("%Y-%m-%d")
+)
+
+# Get pages without content (faster)
+pages = reader.get_pages(include_content=False)
+
+print(f"Found {len(pages)} pages in the last 7 days")
+for page in pages:
+    print(f"- {page.title} by {page.author_display_name}")
+```
+
+### Example 6: Filter by Multiple Authors
+
+```python
+from confluence_integration import ConfluenceReader
+
+reader = ConfluenceReader(
+    url="https://apptio.atlassian.net",
+    email="john.doe@apptio.com",
+    api_token="ATATT3xFfGF0...",
+    space_key="ENGINEERING",
+    authors=["john.doe@apptio.com", "jane.smith@apptio.com"]
+)
+
+# Get pages with content
+pages = reader.get_pages(include_content=True)
+
+# Group by author
+from collections import defaultdict
+by_author = defaultdict(list)
+for page in pages:
+    by_author[page.author_display_name].append(page)
+
+for author, author_pages in by_author.items():
+    print(f"\n{author}: {len(author_pages)} pages")
+    for page in author_pages:
+        print(f"  - {page.title}")
 ```
 
 ## Test Output
@@ -386,6 +542,25 @@ class ConfluencePermissions:
     def test_6_delete_verify(self) -> TestResult
 ```
 
+### ConfluenceReader Class
+
+```python
+class ConfluenceReader:
+    def __init__(
+        self,
+        url: str,
+        email: str,
+        api_token: str,
+        space_key: str,
+        start_date: Optional[str] = None,  # YYYY-MM-DD format, default: 30 days ago
+        end_date: Optional[str] = None,    # YYYY-MM-DD format, default: today
+        authors: Optional[List[str]] = None  # List of author emails/usernames, default: all
+    )
+    def get_pages(self, include_content: bool = False, limit: int = 100) -> List[PageInfo]
+    def get_page_count(self) -> int
+    def get_space_info(self) -> Dict[str, Any]
+```
+
 ### TestResult Dataclass
 
 ```python
@@ -396,6 +571,23 @@ class TestResult:
     message: str                # Human-readable message
     error: Optional[str]        # Error message if failed
     data: Optional[Dict]        # Additional test data
+```
+
+### PageInfo Dataclass
+
+```python
+@dataclass
+class PageInfo:
+    page_id: str                    # Confluence page ID
+    title: str                      # Page title
+    space_key: str                  # Space key
+    author: str                     # Author email or username
+    author_display_name: str        # Author display name
+    created_date: datetime          # Page creation date
+    modified_date: datetime         # Last modification date
+    version: int                    # Page version number
+    url: str                        # Full page URL
+    content: Optional[str]          # Page content (if requested)
 ```
 
 ### Results Dictionary
