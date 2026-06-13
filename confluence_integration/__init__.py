@@ -39,5 +39,5 @@ Usage:
 from .permissions import ConfluencePermissions, TestResult
 from .reader import ConfluenceReader, PageInfo
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __all__ = ["ConfluencePermissions", "TestResult", "ConfluenceReader", "PageInfo"]

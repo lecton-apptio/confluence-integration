@@ -246,7 +246,6 @@ def _save_pages_to_files(pages: list, output_dir: Path, output_format: str, spac
     import json
     import re
 
-
     # Create output directory
     output_dir.mkdir(parents=True, exist_ok=True)
 
